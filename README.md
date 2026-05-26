@@ -80,7 +80,7 @@ DB_PORT=5432
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/secure-doc-ai.git
+git clone https://github.com/harsh5ingh/secure-doc-ai.git
 ```
 
 Move into backend:
