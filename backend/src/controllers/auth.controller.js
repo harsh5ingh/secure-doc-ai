@@ -1,6 +1,11 @@
+import pdf from "pdf-parse-fork"
+import fs from "fs"
+
+
 import bcrypt from "bcrypt"
 import { pool } from "../db/db.js";
 import {generateToken} from "../utils/generateToken.js"
+
 
 export const signup = async(req, res) => {
 
@@ -128,3 +133,150 @@ export const getMe = async (req, res) => {
     })
   }
 }
+
+export const uploadPdf = async (req, res) => {
+
+  try {
+
+    if(!req.file){
+
+      return res.status(400).json({
+        message: "No file uploaded"
+      })
+    }
+
+    const filePath = req.file.path
+
+    const dataBuffer = fs.readFileSync(filePath)
+
+    const pdfData = await pdf(dataBuffer)
+
+    const cleanText = pdfData.text
+    .replace(/\0/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+
+    await pool.query(
+      "INSERT INTO documents (user_id, filename, content) VALUES ($1, $2, $3)",
+      [
+        req.user.id,
+        req.file.originalname,
+        cleanText
+      ]
+    )
+
+    res.status(200).json({
+
+      message: "PDF uploaded successfully",
+
+      text:cleanText
+
+    })
+
+  } catch(error){
+
+    console.log(error.message);
+
+    res.status(500).json({
+      message: "Server error"
+    })
+    
+  }
+}
+
+export const getDocuments = async(req, res) => {
+
+  try {
+
+    const documents = await pool.query(
+
+      "SELECT id, filename, created_at FROM documents WHERE user_id = $1",
+
+      [req.user.id]
+
+    )
+
+    res.status(200).json({
+      documents: documents.rows
+
+    })
+
+  } catch(error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      message: "Server error"
+    })
+    
+  }
+}
+
+export const getSingleDocument = async (req, res) => {
+
+  try {
+
+    const { id} = req.params
+
+    const document = await pool.query(
+
+      "SELECT*FROM documents WHERE id = $1 AND user_id = $2",
+
+      [id, req.user.id]
+
+    )
+
+    if (document.rows.length === 0) {
+      return res.status(404).json({
+
+        message: "Document not found"
+      })
+    }
+
+    res.status(200).json({
+      document:document.rows[0]
+
+    })
+
+  } catch(error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      message: "Server error"
+    })
+    
+  }
+}
+
+export const getDocumentsbyId = async(req,res) => {
+
+  try {
+
+    const {id} = req.params
+
+    const document = await pool.query(
+      "SELECT*FROM documents WHERE id = $1",
+
+      [id]
+    )
+
+    res.status(200).json({
+
+      document:document.rows[0]
+    })
+
+  } catch(error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      message: "Server error"
+    })
+    
+  }
+}
+

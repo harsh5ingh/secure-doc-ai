@@ -4,6 +4,7 @@ import Login from "./pages/login.jsx"
 import Signup from "./pages/Signup.jsx"
 import Dashboard from "./pages/Dashboard.jsx"
 import ProtectedRoute from "./components/ProtectedRoute.jsx"
+import DocumentPage from "./pages/DocumentPage.jsx"
 
 function App(){
   return (
@@ -19,8 +20,11 @@ function App(){
         <ProtectedRoute>
           <Dashboard/>
         </ProtectedRoute>
-      }
-      />
+      }/>
+
+      <Route path="/documents/:id" element={
+        <DocumentPage/>
+      }/>
       
       </Routes>
       
