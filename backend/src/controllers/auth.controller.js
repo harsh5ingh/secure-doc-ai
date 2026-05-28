@@ -151,6 +151,8 @@ export const uploadPdf = async (req, res) => {
 
     const pdfData = await pdf(dataBuffer)
 
+    fs.unlinkSync(filePath)
+
     const cleanText = pdfData.text
     .replace(/\0/g, "")
     .replace(/\s+/g, " ")
@@ -274,6 +276,32 @@ export const getDocumentsbyId = async(req,res) => {
 
     res.status(500).json({
 
+      message: "Server error"
+    })
+    
+  }
+}
+
+export const deleteDocument = async (req, res) => {
+
+  try {
+
+    const {id} = req.params
+
+    await pool.query(
+      "DELETE FROM documents WHERE id = $1 AND user_id = $2",
+      [id, req.user.id]
+    )
+
+    res.status(200).json({
+      message: "Document deleted successfully"
+    })
+
+  } catch(error) {
+
+    console.log(error);
+
+    res.status(500).json({
       message: "Server error"
     })
     

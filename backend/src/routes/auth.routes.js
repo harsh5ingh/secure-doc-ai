@@ -9,6 +9,7 @@ import {
      } from "../controllers/auth.controller.js"
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import {upload} from "../middleware/upload..middleware.js"
+import {deleteDocument} from "../controllers/auth.controller.js"
 
 const router = express.Router()
 
@@ -35,6 +36,12 @@ router.get(
   "/documents/:id",
   authMiddleware,
   getDocumentsbyId,
+)
+
+router.delete(
+  "/documents/:id",
+  authMiddleware,
+  deleteDocument,
 )
 
 export default router
