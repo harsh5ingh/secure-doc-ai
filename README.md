@@ -301,5 +301,4 @@ CREATE TABLE documents (
 
 Harsh Kumar
 
-GitHub:  
-:contentReference[oaicite:0]{index=0}
+GitHub: [harsh5ingh](https://github.com/harsh5ingh)
