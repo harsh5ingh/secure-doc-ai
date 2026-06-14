@@ -2,7 +2,13 @@ import {useEffect, useState} from "react"
 import axios from "axios"
 import {useNavigate} from "react-router-dom"
 import { toast } from "react-toastify";
-import {FaFilePdf} from "react-icons/fa"
+import { FileText, HardDrive, Clock } from "lucide-react";
+
+import { DashboardLayout } from "../components/dashboard/DashboardLayout";
+import { WelcomeSection } from "../components/dashboard/WelcomeSection";
+import { StatsGrid } from "../components/dashboard/StatsGrid";
+import { UploadDropzone } from "../components/dashboard/UploadDropzone";
+import { RecentDocumentsTable } from "../components/dashboard/RecentDocumentsTable";
 
 function Dashboard(){
 
@@ -75,9 +81,9 @@ function Dashboard(){
     navigate("/login")
   }
 
-  const handleUpload = async () => {
+  const handleUpload = async (selectedFile) => {
 
-    if (!file) {
+    if (!selectedFile) {
       alert("Please select a PDF")
       return
     }
@@ -90,7 +96,7 @@ function Dashboard(){
 
       const formData = new FormData()
 
-      formData.append("pdf", file)
+      formData.append("pdf", selectedFile)
 
       await axios.post(
         "http://localhost:3000/api/auth/upload",
@@ -116,6 +122,10 @@ function Dashboard(){
       )
 
       setDocuments(docsResponse.data.documents)
+
+      alert(JSON.stringify(docsResponse.data.documents[0], null, 2))
+
+      console.log("Documents:", docsResponse.data.documents);
 
       toast.success("PDF uploaded successfully")
 
@@ -161,171 +171,81 @@ function Dashboard(){
     }
   }
 
+const tableDocuments = documents.map((doc) => ({
+  ...doc,
+  size: doc.size || "PDF",
+  pages: doc.pages || "-",
+  uploadedAt: doc.created_at
+    ? new Date(doc.created_at).toLocaleDateString()
+    : "Recently",
+}));
 
-
-
-
-
-
+const lastUpload =
+  documents.length > 0
+    ? new Date(documents[documents.length - 1].created_at)
+        .toLocaleString("en-IN", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+    : "Never";
 
 
   return(
-
-  <div className="min-h-screen bg-gray-100">
-
-  {/* Navbar */}
-  <div className="bg-white shadow-sm border-b">
-
-    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-
-      <h1 className="text-2xl font-bold text-blue-600">
-        Secure-Doc AI
-      </h1>
-
-      <div className="flex items-center gap-4">
-
-        <p className="text-gray-600">
-          {user?.email}
-        </p>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-  <div>
-  </div>
-
-  {/* Main Container */}
-  <div className="max-w-5xl mx-auto p-6">
-
-   <div className="mb-8">
-
-  <h2 className="text-4xl font-bold text-gray-800">
-    Welcome Back 👋
-  </h2>
-
-  <p className="text-gray-500 mt-2">
-    Upload and manage your PDFs securely
-  </p>
-
-</div>
-
-    <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
-
-  <h3 className="text-2xl font-semibold mb-4">
-    Upload PDF
-  </h3>
-
-  <div className="flex gap-4">
-
-    <input
-      type="file"
-      accept=".pdf"
-      onChange={(e) => setFile(e.target.files[0])}
-      className="border p-2 rounded-lg w-full"
+  <DashboardLayout
+  currentPath="/dashboard"
+  user={user || { name: "User", email: "" }}
+  onLogout={handleLogout}
+  onSearch={setSearch}
+  onNavigate={navigate}
+>
+    <WelcomeSection
+      name={user?.email?.split("@")[0]}
     />
 
-    <button
-      onClick={handleUpload}
-      disabled={loading}
-      className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition disabled:bg-blue-300 disabled:cursor-not-allowed"
-    >
-      {
-        loading ? "Uploading..."
-
-      : "Upload"
-}
-    </button>
-
-  </div>
-
-</div>
-
-    <div className="bg-white p-6 rounded-2xl shadow-md">
-
-  <input
-  type="text"
-  placeholder="Searching documents..."
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="
-  w-full mb-6 p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-400"
-  />
-      
-
-  <h3 className="text-2xl font-semibold mb-6">
-    Your Documents
-  </h3>
-
-  <div className="space-y-4">
-
+    <StatsGrid
+  stats={[
     {
-      documents.filter((doc) => 
-        
-        doc.filename.toLowerCase().includes(search.toLowerCase())
- ) 
- .map((doc) => (
+      label: "Total Documents",
+      value: documents.length.toString(),
+      hint: "Documents uploaded",
+      hintTone: "success",
+      icon: FileText,
+    },
+    {
+      label: "Storage Used",
+      value: `${documents.length} PDFs`,
+      hint: "Storage tracking soon",
+      hintTone: "muted",
+      icon: HardDrive,
+    },
+    {
+  label: "Last Upload",
+  value: lastUpload,
+  hint: "Synced",
+  hintTone: "success",
+  icon: Clock,
+    },
+  ]}
+/>
 
-        <div
-          key={doc.id}
-          className="
-          bg-white border border-gray-200
-          rounded-2xl p-5
-          hover:shadow-lg
-          hover:translate-y-1
-          transition duration-300
-          flex justify-between items-center"
-        >
+   <UploadDropzone
+     onFilesSelected={(files) => {
+     const selectedFile = files[0]
 
-          <div className="flex items-center gap-4">
-            <div className="bg-red-100 p-3 rounded-xl"/>
+     setFile(selectedFile)
 
-            <FaFilePdf className="text-red-500 text-2xl" />
-            </div>
-            <div>
-            <button
-            onClick={() => navigate( `/documents/${doc.id}`)}
-            className="
-            text-lg font-semibold text-gray-800
-            hover:text-blue-600 transition">
-            {doc.filename}
-            </button>
+     handleUpload(selectedFile)
+    }}
+    />
 
-            <p className="text-sm text-gray-500 mt-1">
-              Secure PDF Document
-            </p>
-            </div>
-          
-          {/* RIght Side */}
-
-          <button
-            onClick={() => handleDelete(doc.id)}
-            className="bg-red-500 text-white
-            px-4 py-2 rounded-lg hover:bg-red-600 hover:scale-105 transition duration-200"
-          >
-            Delete
-          </button>
-
-        </div>
-
-      ))
-    }
-
-  </div>
-
-</div>
-
-  </div>
-
-</div>
+    <RecentDocumentsTable
+  documents={tableDocuments}
+  onOpen={(doc) => navigate(`/documents/${doc.id}`)}
+  onDelete={(doc) => handleDelete(doc.id)}
+/>
+  </DashboardLayout>
 )
 }
 
