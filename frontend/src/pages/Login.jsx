@@ -1,9 +1,12 @@
 import {useState} from "react"
 import axios from "axios"
 import {useNavigate} from "react-router-dom"
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { AuthField, AuthSubmit, Mail, Lock } from "@/components/auth/AuthForm";
 
 function Login(){
 
+  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
@@ -11,6 +14,9 @@ function Login(){
   const handleLogin = async (e) => {
 
     e.preventDefault()
+
+    setLoading(true)
+
 
     try {
 
@@ -35,41 +41,56 @@ function Login(){
 
       alert("Login failed")
       
-    }
+    } finally {
+    setLoading(false)
+  }
   }
 
   return(
-    <div>
-    <h1>Login Page</h1>
+   <AuthLayout title="Welcome back" subtitle="Sign in to your Secure Doc AI workspace.">
+      <form onSubmit={handleLogin} className="space-y-4">
+        <AuthField
+          icon={Mail}
+          type="email"
+          placeholder="you@company.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <AuthField
+          icon={Lock}
+          type="password"
+          placeholder="Your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-    <form onSubmit={handleLogin}>
-      
-      <input
-      type="email"
-      placeholder="Enter email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      />
+        <div className="flex items-center justify-between text-xs">
+          <label className="inline-flex items-center gap-2 text-muted-foreground cursor-pointer select-none">
+            <input type="checkbox" className="h-3.5 w-3.5 rounded border-input bg-card accent-[oklch(0.62_0.22_274)]" />
+            Remember me
+          </label>
+          <button type="button" className="font-medium text-primary hover:text-primary-glow transition-colors">
+            Forgot password?
+          </button>
+        </div>
 
-      <br/>
-      <br/>
+        <AuthSubmit loading={loading}>Sign in</AuthSubmit>
+      </form>
 
-      <input
-      type="password"
-      placeholder="Enter password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <br/>
-      <br/>
-
-      <button type="submit">
-        Login
-      </button>
-    </form>
-    </div>
-  )
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Don't have an account?{" "}
+        <button
+  type="button"
+  onClick={() => navigate("/signup")}
+  className="font-medium text-primary hover:text-primary-glow transition-colors"
+>
+  Create one
+</button>
+      </p>
+    </AuthLayout>
+  );
 }
 
 export default Login
