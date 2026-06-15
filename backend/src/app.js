@@ -1,4 +1,5 @@
 import express from "express"
+import path from "path";
 import authRoutes from "./routes/auth.routes.js"
 import {pool} from "./db/db.js"
 import {authMiddleware} from "./middleware/auth.middleware.js"
@@ -22,6 +23,8 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
    console.log("Server started")
 })
+
+app.use("/uploads", express.static("uploads"));
 
 app.get("/profile", authMiddleware, (req, res) => {
    res.json({

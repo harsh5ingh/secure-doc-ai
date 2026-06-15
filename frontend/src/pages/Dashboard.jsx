@@ -123,8 +123,6 @@ function Dashboard(){
 
       setDocuments(docsResponse.data.documents)
 
-      alert(JSON.stringify(docsResponse.data.documents[0], null, 2))
-
       console.log("Documents:", docsResponse.data.documents);
 
       toast.success("PDF uploaded successfully")
@@ -171,25 +169,45 @@ function Dashboard(){
     }
   }
 
+const totalBytes = documents.reduce(
+  (sum, doc) => sum + Number(doc.file_size || 0),
+  0
+);
+
+const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return "0 KB";
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 const tableDocuments = documents.map((doc) => ({
   ...doc,
-  size: doc.size || "PDF",
+  size: formatFileSize(doc.file_size),
   pages: doc.pages || "-",
   uploadedAt: doc.created_at
     ? new Date(doc.created_at).toLocaleDateString()
     : "Recently",
 }));
 
-const lastUpload =
-  documents.length > 0
-    ? new Date(documents[documents.length - 1].created_at)
-        .toLocaleString("en-IN", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-    : "Never";
+const latestDoc = [...documents].sort(
+  (a, b) => new Date(b.created_at) - new Date(a.created_at)
+)[0];
+
+const lastUpload = latestDoc
+  ? new Date(latestDoc.created_at).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  : "Never";
 
 
   return(
@@ -214,12 +232,12 @@ const lastUpload =
       icon: FileText,
     },
     {
-      label: "Storage Used",
-      value: `${documents.length} PDFs`,
-      hint: "Storage tracking soon",
-      hintTone: "muted",
-      icon: HardDrive,
-    },
+  label: "Storage Used",
+  value: `${totalMB} MB`,
+  hint: "out of 5 GB",
+  hintTone: "muted",
+  icon: HardDrive,
+},
     {
   label: "Last Upload",
   value: lastUpload,

@@ -151,7 +151,7 @@ export const uploadPdf = async (req, res) => {
 
     const pdfData = await pdf(dataBuffer)
 
-    fs.unlinkSync(filePath)
+    // fs.unlinkSync(filePath)
 
     const cleanText = pdfData.text
     .replace(/\0/g, "")
@@ -159,13 +159,19 @@ export const uploadPdf = async (req, res) => {
     .trim()
 
     await pool.query(
-      "INSERT INTO documents (user_id, filename, content) VALUES ($1, $2, $3)",
-      [
-        req.user.id,
-        req.file.originalname,
-        cleanText
-      ]
-    )
+`
+INSERT INTO documents
+(user_id, filename, content, file_size, pdf_url)
+VALUES ($1, $2, $3, $4, $5)
+`,
+[
+  req.user.id,
+  req.file.originalname,
+  cleanText,
+  req.file.size,
+  req.file.path
+]
+)
 
     res.status(200).json({
 
@@ -191,12 +197,9 @@ export const getDocuments = async(req, res) => {
   try {
 
     const documents = await pool.query(
-
-      "SELECT id, filename, created_at FROM documents WHERE user_id = $1",
-
-      [req.user.id]
-
-    )
+  "SELECT id, filename, created_at, file_size FROM documents WHERE user_id = $1",
+  [req.user.id]
+)
 
     res.status(200).json({
       documents: documents.rows
