@@ -21,6 +21,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import ReactMarkdown from "react-markdown";
 
 const LOADING_MESSAGES = [
   "Analyzing document structure...",
@@ -108,13 +109,42 @@ function DocumentPage() {
   const charCount = document?.content?.length || 0;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
-  const generateSummary = () => {
+  const generateSummary = async () => {
+  try {
     setLoadingSummary(true);
-    setTimeout(() => {
-      setSummary(document.content?.split(" ").slice(0, 80).join(" ") + "...");
-      setLoadingSummary(false);
-    }, 1000);
-  };
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+      "http://localhost:3000/api/ai/summary",
+      {
+        documentId: document.id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setSummary(response.data.summary);
+
+    if (response.data.cached) {
+      toast.info("Loaded from cache");
+    } else {
+      toast.success("Summary generated");
+    }
+  } catch (error) {
+    console.error(error);
+
+    toast.error(
+      error?.response?.data?.message ||
+      "Failed to generate summary"
+    );
+  } finally {
+    setLoadingSummary(false);
+  }
+};
 
   const copySummary = () => {
     navigator.clipboard.writeText(summary || "");
@@ -331,7 +361,11 @@ function DocumentPage() {
                       </div>
 
                       <div className="rounded-xl border border-border/40 bg-background/40 p-4 text-sm leading-7 text-foreground/90">
-                        {summary}
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown>
+                            {summary}
+                          </ReactMarkdown>
+                        </div>
                       </div>
 
                       <div className="mt-4 grid grid-cols-2 gap-2">

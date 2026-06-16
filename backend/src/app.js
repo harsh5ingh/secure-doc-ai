@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.routes.js"
 import {pool} from "./db/db.js"
 import {authMiddleware} from "./middleware/auth.middleware.js"
 import cors from 'cors';
+import aiRoutes from "./routes/ai.routes.js";
 
 const app = express()
 
@@ -15,6 +16,7 @@ pool.connect()
  .catch(err => console.log(err))
 
 app.use("/api/auth", authRoutes)
+app.use("/api/ai", aiRoutes);
 
 app.get("/", (req, res) => {
    res.send("Server running")

@@ -12,12 +12,13 @@ import { RecentDocumentsTable } from "../components/dashboard/RecentDocumentsTab
 
 function Dashboard(){
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [documents, setDocuments] = useState([])
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [file, setFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState("")
 
   useEffect(() => {
 
@@ -48,27 +49,22 @@ function Dashboard(){
     const fetchDocuments = async () => {
 
       try {
-
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("token");
 
         const response = await axios.get(
           "http://localhost:3000/api/auth/documents",
-
           {
-            headers:{
-              Authorization: `Bearer ${token}`
-            }
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        )
+        );
 
-        setDocuments(response.data.documents)
-
-      } catch(error) {
-
-        console.log(error);
-        
+        setDocuments(response.data.documents);
+      } catch (error) {
+        console.error(error);
       }
-    }
+    };
 
     fetchUser()
     fetchDocuments()
@@ -154,8 +150,8 @@ function Dashboard(){
         }
       )
 
-      setDocuments(
-        documents.filter((doc) => doc.id !==id)
+      setDocuments(prev =>
+        prev.filter(doc => doc.id !== id)
       )
 
       toast.success("Document deleted")
@@ -217,6 +213,10 @@ const lastUpload = latestDoc
   onLogout={handleLogout}
   onSearch={setSearch}
   onNavigate={navigate}
+  sidebarCollapsed={sidebarCollapsed}
+  onToggleSidebar={() =>
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
 >
     <WelcomeSection
       name={user?.email?.split("@")[0]}

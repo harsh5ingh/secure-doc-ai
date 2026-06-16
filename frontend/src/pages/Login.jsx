@@ -3,6 +3,7 @@ import axios from "axios"
 import {useNavigate} from "react-router-dom"
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthField, AuthSubmit, Mail, Lock } from "@/components/auth/AuthForm";
+import { toast } from "react-toastify";
 
 function Login(){
 
@@ -32,14 +33,14 @@ function Login(){
         response.data.token
       )
 
-      alert("Login Successful")
+      // toast.success("Login Successful")
 
-      console.log(response.data);
+      // console.log(response.data);
       navigate("/dashboard")
     } catch(error) {
       console.log(error);
 
-      alert("Login failed")
+      toast.error("Login failed")
       
     } finally {
     setLoading(false)

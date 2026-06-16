@@ -1,5 +1,6 @@
 import pdf from "pdf-parse-fork"
 import fs from "fs"
+import { extractTextFromPDF } from "../utils/extractText.js";
 
 
 import bcrypt from "bcrypt"
@@ -145,18 +146,17 @@ export const uploadPdf = async (req, res) => {
       })
     }
 
-    const filePath = req.file.path
+   const filePath = req.file.path
 
-    const dataBuffer = fs.readFileSync(filePath)
+const dataBuffer = fs.readFileSync(filePath)
 
-    const pdfData = await pdf(dataBuffer)
+const extractedText =
+  await extractTextFromPDF(dataBuffer)
 
-    // fs.unlinkSync(filePath)
-
-    const cleanText = pdfData.text
-    .replace(/\0/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
+const cleanText = extractedText
+  .replace(/\0/g, "")
+  .replace(/\s+/g, " ")
+  .trim()
 
     await pool.query(
 `
@@ -263,9 +263,9 @@ export const getDocumentsbyId = async(req,res) => {
     const {id} = req.params
 
     const document = await pool.query(
-      "SELECT*FROM documents WHERE id = $1",
+      "SELECT * FROM documents WHERE id = $1 AND user_id = $2",
 
-      [id]
+      [id, req.user.id]
     )
 
     res.status(200).json({
