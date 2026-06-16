@@ -12,12 +12,13 @@ import { RecentDocumentsTable } from "../components/dashboard/RecentDocumentsTab
 
 function Dashboard(){
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [documents, setDocuments] = useState([])
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [file, setFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState("")
 
   useEffect(() => {
 
@@ -48,27 +49,22 @@ function Dashboard(){
     const fetchDocuments = async () => {
 
       try {
-
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("token");
 
         const response = await axios.get(
           "http://localhost:3000/api/auth/documents",
-
           {
-            headers:{
-              Authorization: `Bearer ${token}`
-            }
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        )
+        );
 
-        setDocuments(response.data.documents)
-
-      } catch(error) {
-
-        console.log(error);
-        
+        setDocuments(response.data.documents);
+      } catch (error) {
+        console.error(error);
       }
-    }
+    };
 
     fetchUser()
     fetchDocuments()
@@ -123,8 +119,6 @@ function Dashboard(){
 
       setDocuments(docsResponse.data.documents)
 
-      alert(JSON.stringify(docsResponse.data.documents[0], null, 2))
-
       console.log("Documents:", docsResponse.data.documents);
 
       toast.success("PDF uploaded successfully")
@@ -156,8 +150,8 @@ function Dashboard(){
         }
       )
 
-      setDocuments(
-        documents.filter((doc) => doc.id !==id)
+      setDocuments(prev =>
+        prev.filter(doc => doc.id !== id)
       )
 
       toast.success("Document deleted")
@@ -171,25 +165,45 @@ function Dashboard(){
     }
   }
 
+const totalBytes = documents.reduce(
+  (sum, doc) => sum + Number(doc.file_size || 0),
+  0
+);
+
+const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return "0 KB";
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 const tableDocuments = documents.map((doc) => ({
   ...doc,
-  size: doc.size || "PDF",
+  size: formatFileSize(doc.file_size),
   pages: doc.pages || "-",
   uploadedAt: doc.created_at
     ? new Date(doc.created_at).toLocaleDateString()
     : "Recently",
 }));
 
-const lastUpload =
-  documents.length > 0
-    ? new Date(documents[documents.length - 1].created_at)
-        .toLocaleString("en-IN", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-    : "Never";
+const latestDoc = [...documents].sort(
+  (a, b) => new Date(b.created_at) - new Date(a.created_at)
+)[0];
+
+const lastUpload = latestDoc
+  ? new Date(latestDoc.created_at).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  : "Never";
 
 
   return(
@@ -199,6 +213,10 @@ const lastUpload =
   onLogout={handleLogout}
   onSearch={setSearch}
   onNavigate={navigate}
+  sidebarCollapsed={sidebarCollapsed}
+  onToggleSidebar={() =>
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
 >
     <WelcomeSection
       name={user?.email?.split("@")[0]}
@@ -214,12 +232,12 @@ const lastUpload =
       icon: FileText,
     },
     {
-      label: "Storage Used",
-      value: `${documents.length} PDFs`,
-      hint: "Storage tracking soon",
-      hintTone: "muted",
-      icon: HardDrive,
-    },
+  label: "Storage Used",
+  value: `${totalMB} MB`,
+  hint: "out of 5 GB",
+  hintTone: "muted",
+  icon: HardDrive,
+},
     {
   label: "Last Upload",
   value: lastUpload,

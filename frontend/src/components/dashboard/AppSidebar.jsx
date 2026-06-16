@@ -23,7 +23,13 @@ const general = [
   { title: "Help & docs", url: "/help", icon: HelpCircle },
 ];
 
-function NavItem({ item, active, onNavigate, index }) {
+function NavItem({
+  item,
+  active,
+  onNavigate,
+  index,
+  collapsed,
+}) {
   const Icon = item.icon;
 
   return (
@@ -31,22 +37,29 @@ function NavItem({ item, active, onNavigate, index }) {
       onClick={() => onNavigate?.(item.url)}
       style={{ animationDelay: `${index * 40}ms` }}
       className={cn(
-        "animate-fade-up group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200",
+        "animate-fade-up flex w-full items-center rounded-lg py-2 text-sm transition-all duration-200",
+        collapsed
+          ? "justify-center px-0"
+          : "gap-3 px-3",
         active
           ? "bg-sidebar-accent text-foreground shadow-[inset_0_0_0_1px_oklch(0.62_0.22_274/0.4)]"
-          : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground hover:translate-x-0.5"
+          : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
       )}
     >
       <Icon
         className={cn(
-          "h-4 w-4 shrink-0 transition-colors",
+          "h-4 w-4 shrink-0",
           active && "text-primary"
         )}
       />
 
-      <span className="flex-1 text-left">{item.title}</span>
+      {!collapsed && (
+        <span className="flex-1 text-left">
+          {item.title}
+        </span>
+      )}
 
-      {item.soon && (
+      {!collapsed && item.soon && (
         <span className="rounded-md bg-primary/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-primary">
           Soon
         </span>
@@ -60,6 +73,7 @@ export function AppSidebar({
   onNavigate,
   user = null,
   onLogout,
+  collapsed = false,
 }) {
   const displayName =
     user?.name ||
@@ -77,31 +91,39 @@ export function AppSidebar({
     .toUpperCase();
 
   return (
-    <aside className="hidden lg:flex h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0">
+    <aside
+  className={`hidden lg:flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 transition-all duration-300 ${
+    collapsed ? "w-[72px]" : "w-64"
+  }`}
+>
       {/* Logo */}
-      <div className="h-[60px] border-b border-sidebar-border px-5 flex items-center">
-        <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-[image:var(--gradient-primary)] shadow-[var(--shadow-glow)]">
-            <Shield className="h-4 w-4 text-primary-foreground" />
-          </div>
+      <div className="h-[60px] border-b border-sidebar-border flex items-center justify-center px-3">
+  <div className="flex items-center gap-3">
+    <div className="grid h-9 w-9 place-items-center rounded-lg bg-[image:var(--gradient-primary)]">
+      <Shield className="h-4 w-4 text-primary-foreground" />
+    </div>
 
-          <div>
-            <p className="text-sm font-semibold">
-              Secure Doc AI
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Document intelligence
-            </p>
-          </div>
-        </div>
+    {!collapsed && (
+      <div>
+        <p className="text-sm font-semibold">
+          Secure Doc AI
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          Document intelligence
+        </p>
       </div>
+    )}
+  </div>
+</div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="mb-6">
-          <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Workspace
-          </p>
+          {!collapsed && (
+            <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Workspace
+            </p>
+          )}
 
           <div className="space-y-1">
             {workspace.map((item, index) => (
@@ -111,15 +133,18 @@ export function AppSidebar({
                 index={index}
                 active={currentPath === item.url}
                 onNavigate={onNavigate}
+                collapsed={collapsed}
               />
             ))}
           </div>
         </div>
 
         <div>
-          <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            General
-          </p>
+          {!collapsed && (
+            <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              General
+            </p>
+          )}
 
           <div className="space-y-1">
             {general.map((item, index) => (
@@ -129,6 +154,7 @@ export function AppSidebar({
                 index={index}
                 active={currentPath === item.url}
                 onNavigate={onNavigate}
+                collapsed={collapsed}
               />
             ))}
           </div>
@@ -136,47 +162,59 @@ export function AppSidebar({
       </nav>
 
       {/* Upgrade Card */}
-      <div className="m-3 rounded-xl border border-sidebar-border bg-[image:var(--gradient-surface)] p-4">
-        <div className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-[10px] font-medium text-primary">
-          <Sparkles className="h-3 w-3" />
-          PRO
+      {!collapsed && (
+        <div className="m-3 rounded-xl border border-sidebar-border bg-[image:var(--gradient-surface)] p-4">
+          <div className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-[10px] font-medium text-primary">
+            <Sparkles className="h-3 w-3" />
+            PRO
+          </div>
+
+          <p className="mt-3 text-sm font-medium">
+            Unlock AI chat & semantic search
+          </p>
+
+          <button className="mt-3 w-full rounded-md bg-[image:var(--gradient-primary)] px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
+            Upgrade Plan
+          </button>
         </div>
-
-        <p className="mt-3 text-sm font-medium">
-          Unlock AI chat & semantic search
-        </p>
-
-        <button className="mt-3 w-full rounded-md bg-[image:var(--gradient-primary)] px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
-          Upgrade Plan
-        </button>
-      </div>
+      )}
 
       {/* User */}
-      <div className="border-t border-sidebar-border p-3">
-        <button
-          onClick={onLogout}
-          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </button>
+<div className="border-t border-sidebar-border p-3">
+  <button
+    onClick={onLogout}
+    className={cn(
+      "mb-2 flex items-center rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
+      collapsed ? "justify-center w-full" : "gap-3 w-full"
+    )}
+  >
+    <LogOut className="h-4 w-4" />
+    {!collapsed && "Logout"}
+  </button>
 
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-muted text-xs font-semibold">
-            {initials || "U"}
-          </div>
+  <div
+    className={cn(
+      "px-3 py-2 flex items-center",
+      collapsed ? "justify-center" : "gap-3"
+    )}
+  >
+    <div className="grid h-8 w-8 place-items-center rounded-full bg-muted text-xs font-semibold">
+      {initials || "U"}
+    </div>
 
-          <div className="min-w-0">
-            <p className="truncate text-xs font-medium">
-              {displayName}
-            </p>
+    {!collapsed && (
+      <div className="min-w-0">
+        <p className="truncate text-xs font-medium">
+          {displayName}
+        </p>
 
-            <p className="truncate text-[10px] text-muted-foreground">
-              {email}
-            </p>
-          </div>
-        </div>
+        <p className="truncate text-[10px] text-muted-foreground">
+          {email}
+        </p>
       </div>
+    )}
+  </div>
+</div>
     </aside>
   );
 }

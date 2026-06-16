@@ -1,5 +1,6 @@
 import pdf from "pdf-parse-fork"
 import fs from "fs"
+import { extractTextFromPDF } from "../utils/extractText.js";
 
 
 import bcrypt from "bcrypt"
@@ -145,27 +146,32 @@ export const uploadPdf = async (req, res) => {
       })
     }
 
-    const filePath = req.file.path
+   const filePath = req.file.path
 
-    const dataBuffer = fs.readFileSync(filePath)
+const dataBuffer = fs.readFileSync(filePath)
 
-    const pdfData = await pdf(dataBuffer)
+const extractedText =
+  await extractTextFromPDF(dataBuffer)
 
-    fs.unlinkSync(filePath)
-
-    const cleanText = pdfData.text
-    .replace(/\0/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
+const cleanText = extractedText
+  .replace(/\0/g, "")
+  .replace(/\s+/g, " ")
+  .trim()
 
     await pool.query(
-      "INSERT INTO documents (user_id, filename, content) VALUES ($1, $2, $3)",
-      [
-        req.user.id,
-        req.file.originalname,
-        cleanText
-      ]
-    )
+`
+INSERT INTO documents
+(user_id, filename, content, file_size, pdf_url)
+VALUES ($1, $2, $3, $4, $5)
+`,
+[
+  req.user.id,
+  req.file.originalname,
+  cleanText,
+  req.file.size,
+  req.file.path
+]
+)
 
     res.status(200).json({
 
@@ -191,12 +197,9 @@ export const getDocuments = async(req, res) => {
   try {
 
     const documents = await pool.query(
-
-      "SELECT id, filename, created_at FROM documents WHERE user_id = $1",
-
-      [req.user.id]
-
-    )
+  "SELECT id, filename, created_at, file_size FROM documents WHERE user_id = $1",
+  [req.user.id]
+)
 
     res.status(200).json({
       documents: documents.rows
@@ -260,9 +263,9 @@ export const getDocumentsbyId = async(req,res) => {
     const {id} = req.params
 
     const document = await pool.query(
-      "SELECT*FROM documents WHERE id = $1",
+      "SELECT * FROM documents WHERE id = $1 AND user_id = $2",
 
-      [id]
+      [id, req.user.id]
     )
 
     res.status(200).json({
