@@ -131,6 +131,9 @@ secure-doc-ai
 │   │
 │   └── uploads
 │
+├── database
+│   ├── schema.sql
+│
 ├── frontend
 │   ├── src
 │   │   ├── components
