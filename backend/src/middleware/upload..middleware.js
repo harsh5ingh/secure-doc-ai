@@ -18,6 +18,10 @@ const storage = multer.diskStorage({
 
 })
 
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads", { recursive: true });
+}
+
 export const upload = multer({
   storage
 })
