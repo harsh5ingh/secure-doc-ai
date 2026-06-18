@@ -29,7 +29,7 @@ function Dashboard(){
         const token = localStorage.getItem("token")
 
         const response = await axios.get(
-          "http://localhost:3000/api/auth/me",
+          `${import.meta.env.VITE_API_URL}/api/auth/me`,
           {
             headers:{
               Authorization: `Bearer ${token}`
@@ -52,7 +52,7 @@ function Dashboard(){
         const token = localStorage.getItem("token");
 
         const response = await axios.get(
-          "http://localhost:3000/api/auth/documents",
+          `${import.meta.env.VITE_API_URL}/api/auth/documents`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ function Dashboard(){
       formData.append("pdf", selectedFile)
 
       await axios.post(
-        "http://localhost:3000/api/auth/upload",
+        `${import.meta.env.VITE_API_URL}/api/auth/upload`,
 
         formData,
 
@@ -108,7 +108,7 @@ function Dashboard(){
       )
 
       const docsResponse = await axios.get(
-        "http://localhost:3000/api/auth/documents",
+        `${import.meta.env.VITE_API_URL}/api/auth/documents`,
 
         {
           headers:{
@@ -142,7 +142,7 @@ function Dashboard(){
       const token = localStorage.getItem("token")
 
       await axios.delete(
-        `http://localhost:3000/api/auth/documents/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/auth/documents/${id}`,
         {
           headers:{
             Authorization: `Bearer ${token}`
