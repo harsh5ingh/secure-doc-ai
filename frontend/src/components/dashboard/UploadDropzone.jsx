@@ -1,15 +1,22 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { FileUp, FilePlus2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function UploadDropzone({ onFilesSelected, accept = "application/pdf" }) {
-  const [drag, setDrag] = useState(false);
-  const inputRef = useRef(null);
+export const UploadDropzone = forwardRef(
+  ({ onFilesSelected, accept = "application/pdf" }, ref) => {
+    const [drag, setDrag] = useState(false);
+    const inputRef = useRef(null);
 
-  const handleFiles = useCallback((files) => {
-    if (!files || files.length === 0) return;
-    onFilesSelected?.(Array.from(files));
-  }, [onFilesSelected]);
+    useImperativeHandle(ref, () => ({
+      openFilePicker: () => {
+        inputRef.current?.click();
+      },
+    }));
+
+    const handleFiles = useCallback((files) => {
+      if (!files || files.length === 0) return;
+      onFilesSelected?.(Array.from(files));
+    }, [onFilesSelected]);
 
   return (
     <div
@@ -66,3 +73,6 @@ export function UploadDropzone({ onFilesSelected, accept = "application/pdf" }) 
     </div>
   );
 }
+);
+
+export default UploadDropzone;

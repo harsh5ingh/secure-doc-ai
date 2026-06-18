@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react"
+import { useEffect, useState, useRef } from "react";
 import axios from "axios"
 import {useNavigate} from "react-router-dom"
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ function Dashboard(){
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [file, setFile] = useState(null)
+  const uploadRef = useRef(null);
 
   useEffect(() => {
 
@@ -219,8 +220,9 @@ const lastUpload = latestDoc
   }
 >
     <WelcomeSection
-      name={user?.email?.split("@")[0]}
-    />
+  name={user?.email?.split("@")[0]}
+  onNewUpload={() => uploadRef.current?.openFilePicker()}
+/>
 
     <StatsGrid
   stats={[
@@ -249,6 +251,7 @@ const lastUpload = latestDoc
 />
 
    <UploadDropzone
+     ref={uploadRef}
      onFilesSelected={(files) => {
      const selectedFile = files[0]
 
