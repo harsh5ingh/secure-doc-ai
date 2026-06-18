@@ -43,6 +43,9 @@ export function TopBar({
   const [showNotifications, setShowNotifications] =
   useState(false);
 
+  const [showProfile, setShowProfile] =
+  useState(false);
+
   return (
     <header className="sticky top-0 z-30 h-[60px] border-b border-border bg-background/70 backdrop-blur-xl">
       <div className="flex h-full items-center gap-3 px-4 sm:px-6">
@@ -85,16 +88,19 @@ export function TopBar({
           )}
         </button>
 
+        <div className="flex items-center gap-3">
+
         {/* Notifications */}
         <div className="relative">
   <button
-    onClick={() =>
-      setShowNotifications(
-        !showNotifications
-      )
-    }
-    className="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
-  >
+  onClick={() => {
+    setShowNotifications(
+      !showNotifications
+    );
+    setShowProfile(false);
+  }}
+  className="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+>
     <Bell className="h-4 w-4" />
 
     {notifications.length > 0 && (
@@ -140,21 +146,67 @@ export function TopBar({
 </div>
 
         {/* User Profile */}
-        <button className="flex items-center gap-2.5 rounded-full border border-border bg-card pl-1 pr-3 py-1 hover:bg-muted/60 transition-colors">
-          <div className="grid h-7 w-7 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-[10px] font-semibold text-primary-foreground">
-            {initials}
-          </div>
+        <div className="relative">
+  <button
+  onClick={() => {
+    setShowProfile(!showProfile);
+    setShowNotifications(false);
+  }}
+    className="flex items-center gap-2.5 rounded-full border border-border bg-card pl-1 pr-3 py-1 hover:bg-muted/60 transition-colors"
+  >
+    <div className="grid h-7 w-7 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-[10px] font-semibold text-primary-foreground">
+      {initials}
+    </div>
 
-          <div className="hidden md:flex flex-col leading-tight text-left">
-            <span className="text-xs font-medium">
-              {displayName}
-            </span>
+    <div className="hidden md:flex flex-col leading-tight text-left">
+      <span className="text-xs font-medium">
+        {displayName}
+      </span>
 
-            <span className="text-[10px] text-muted-foreground">
-              {email}
-            </span>
-          </div>
-        </button>
+      <span className="text-[10px] text-muted-foreground">
+        {email}
+      </span>
+    </div>
+  </button>
+
+  {showProfile && (
+    <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden">
+      
+      <div className="p-4 border-b border-border">
+        <p className="font-medium">
+          {displayName}
+        </p>
+
+        <p className="text-xs text-muted-foreground">
+          {email}
+        </p>
+      </div>
+
+      <button
+        className="w-full text-left px-4 py-3 hover:bg-muted/40"
+      >
+        Profile
+      </button>
+
+      <button
+        className="w-full text-left px-4 py-3 hover:bg-muted/40"
+      >
+        Settings
+      </button>
+
+      <button
+        onClick={() => {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+        }}
+        className="w-full text-left px-4 py-3 text-red-500 hover:bg-red-500/10"
+      >
+        Logout
+      </button>
+    </div>
+  )}
+</div>
+</div>
       </div>
     </header>
   );
