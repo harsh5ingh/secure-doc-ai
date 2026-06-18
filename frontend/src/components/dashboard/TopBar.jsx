@@ -5,6 +5,7 @@ export function TopBar({
   user = { name: "User", email: "user@example.com" },
   onSearch,
   onToggleSidebar,
+  notifications = [],
 }) {
   const displayName =
     user?.name ||
@@ -38,6 +39,9 @@ export function TopBar({
       localStorage.setItem("theme", "light");
     }
   };
+
+  const [showNotifications, setShowNotifications] =
+  useState(false);
 
   return (
     <header className="sticky top-0 z-30 h-[60px] border-b border-border bg-background/70 backdrop-blur-xl">
@@ -82,10 +86,58 @@ export function TopBar({
         </button>
 
         {/* Notifications */}
-        <button className="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors">
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
-        </button>
+        <div className="relative">
+  <button
+    onClick={() =>
+      setShowNotifications(
+        !showNotifications
+      )
+    }
+    className="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+  >
+    <Bell className="h-4 w-4" />
+
+    {notifications.length > 0 && (
+      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-white">
+        {notifications.length}
+      </span>
+    )}
+  </button>
+
+  {showNotifications && (
+    <div className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden">
+      
+      <div className="border-b border-border px-4 py-3">
+        <h3 className="font-medium">
+          Notifications
+        </h3>
+      </div>
+
+      <div className="max-h-80 overflow-y-auto">
+        {notifications.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">
+            No notifications
+          </div>
+        ) : (
+          notifications.map((item) => (
+            <div
+              key={item.id}
+              className="border-b border-border px-4 py-3"
+            >
+              <p className="text-sm">
+                {item.message}
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                {item.time}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )}
+</div>
 
         {/* User Profile */}
         <button className="flex items-center gap-2.5 rounded-full border border-border bg-card pl-1 pr-3 py-1 hover:bg-muted/60 transition-colors">

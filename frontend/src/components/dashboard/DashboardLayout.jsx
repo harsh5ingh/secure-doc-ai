@@ -8,6 +8,7 @@ export function DashboardLayout({
   user,
   onSearch,
   onLogout,
+  notifications,
   sidebarCollapsed = false,
   onToggleSidebar,
 }) {
@@ -26,6 +27,7 @@ export function DashboardLayout({
           user={user}
           onSearch={onSearch}
           onToggleSidebar={onToggleSidebar}
+          notifications={notifications}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-10 w-full">

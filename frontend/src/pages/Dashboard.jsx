@@ -21,6 +21,11 @@ function Dashboard(){
   const [file, setFile] = useState(null)
   const uploadRef = useRef(null);
 
+  const [notifications, setNotifications] = useState(() => {
+  const saved = localStorage.getItem("notifications");
+  return saved ? JSON.parse(saved) : [];
+});
+
   useEffect(() => {
 
     const fetchUser = async () => {
@@ -72,6 +77,30 @@ function Dashboard(){
   
   }, [])
 
+useEffect(() => {
+  localStorage.setItem(
+    "notifications",
+    JSON.stringify(notifications)
+  );
+}, [notifications]);
+
+  const addNotification = (type, message) => {
+  const notification = {
+    id: Date.now(),
+    type,
+    message,
+    time: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  setNotifications((prev) => [
+    notification,
+    ...prev,
+  ]);
+};
+
   const handleLogout = () => {
     localStorage.removeItem("token")
 
@@ -122,7 +151,10 @@ function Dashboard(){
 
       console.log("Documents:", docsResponse.data.documents);
 
-      toast.success("PDF uploaded successfully")
+      addNotification(
+      "upload",
+      `${selectedFile.name} uploaded successfully`
+  );
 
     } catch(error) {
 
@@ -155,7 +187,10 @@ function Dashboard(){
         prev.filter(doc => doc.id !== id)
       )
 
-      toast.success("Document deleted")
+      addNotification(
+      "delete",
+      "Document deleted successfully"
+    );
 
     } catch(error) {
 
@@ -212,6 +247,7 @@ const lastUpload = latestDoc
   currentPath="/dashboard"
   user={user || { name: "User", email: "" }}
   onLogout={handleLogout}
+  notifications={notifications}
   onSearch={setSearch}
   onNavigate={navigate}
   sidebarCollapsed={sidebarCollapsed}
