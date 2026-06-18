@@ -1,4 +1,4 @@
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login.jsx"
 import Signup from "./pages/Signup.jsx"
@@ -11,22 +11,32 @@ function App(){
     <BrowserRouter>
     
     <Routes>
-      
-      <Route path="/login" element={<Login />}/>
 
-      <Route path="/signup" element={<Signup />}/>
+  <Route
+    path="/"
+    element={
+      localStorage.getItem("token")
+        ? <Navigate to="/dashboard" replace />
+        : <Navigate to="/login" replace />
+    }
+  />
 
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard/>
-        </ProtectedRoute>
-      }/>
+  <Route path="/login" element={<Login />} />
 
-      <Route path="/documents/:id" element={
-        <DocumentPage/>
-      }/>
-      
-      </Routes>
+  <Route path="/signup" element={<Signup />} />
+
+  <Route
+    path="/dashboard"
+    element={
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route path="/documents/:id" element={<DocumentPage />} />
+
+</Routes>
       
       </BrowserRouter>
   )
