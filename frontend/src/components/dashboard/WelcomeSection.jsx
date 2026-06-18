@@ -1,6 +1,6 @@
 import { Upload } from "lucide-react";
 
-export function WelcomeSection({ name = "dj", onNewUpload }) {
+export function WelcomeSection({ name = "admin", onNewUpload }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between mb-8 animate-fade-up">
       <div className="min-w-0">
