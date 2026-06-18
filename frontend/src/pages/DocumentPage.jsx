@@ -44,7 +44,7 @@ function DocumentPage() {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:3000/api/auth/documents/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/auth/documents/${id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setDocument(response.data.document);
@@ -116,7 +116,7 @@ function DocumentPage() {
     const token = localStorage.getItem("token");
 
     const response = await axios.post(
-      "http://localhost:3000/api/ai/summary",
+      `${import.meta.env.VITE_API_URL}/api/ai/summary`,
       {
         documentId: document.id,
       },
@@ -201,7 +201,7 @@ function DocumentPage() {
             </div>
             <div className="p-3">
               <iframe
-                src={`http://localhost:3000/${document.pdf_url}`}
+                src={`${import.meta.env.VITE_API_URL}/${document.pdf_url}`}
                 title="PDF Preview"
                 className="w-full h-[480px] md:h-[640px] lg:h-[760px] rounded-xl bg-muted/30"
               />
